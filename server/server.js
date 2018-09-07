@@ -27,6 +27,14 @@ app.get('/todos', (req, res) => {
     })
 });
 
+app.get('/users', (req, res) => {
+    User.find().then((users) => {
+        res.send({users});
+    }, (e) => {
+        res.status(400).send(e);
+    })
+});
+
 app.listen(3000, () => {
     console.log('Server is up on port 3000');
 });
