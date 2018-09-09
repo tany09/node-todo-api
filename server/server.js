@@ -48,8 +48,24 @@ app.get('/todos/:id', (req, res) => {
         }
         res.status(200).send({todo});
     }).catch((e) => {
-        res.send(400).send('Some error occured');
+        res.status(400).send('Some error occured');
     });
+});
+
+app.delete('/todos/:id', (req, res) => {
+    const id = req.params.id;
+    if(!ObjectId.isValid(id)) {
+        return res.status(404).send('Error: Invalid todo id');
+    }
+    Todo.findOneAndRemove({_id: '5b92bc4341e1413609ae7715'}).then((todo) => {
+        if(!todo) {
+            return res.status(404).send("Error: Todo not found with the given id");    
+        }
+        res.status(200).send({todo});
+    }).catch((e) => {
+        res.status(400).send("Error: 400");
+    })
+
 });
 
 app.listen(port, () => {
