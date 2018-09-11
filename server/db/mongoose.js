@@ -4,7 +4,7 @@ mongoose.Promise = global.Promise;
 
 dotenv.config();
 
-mongoose.connect(process.env.DB_URI || 'mongodb://localhost:27017/TodoApp');
+mongoose.connect(process.env.DB_URI);
 
 module.exports = {
     mongoose
