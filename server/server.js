@@ -1,4 +1,5 @@
 const {mongoose} = require('./db/mongoose');
+const _ = require('lodash');
 const {Todo} = require('./models/todo');
 const {User} = require('./models/user');
 const express = require('express');
@@ -65,6 +66,32 @@ app.delete('/todos/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send("Error: 400");
     })
+
+});
+
+app.patch('/todos/:id', (req, res) => {
+    const id = req.params.id;
+    const body = _.pick(req.body, ['text', 'completed']);
+    if(!ObjectId.isValid(id)) {
+        return res.status(404).send('Error: Invalid todo id');
+    }
+
+    if(_.isBoolean(body.completed) && body.completed) {
+        body.completedAt = new Date().getTime();
+        console.log(body.completedAt)
+    }
+    else {
+        body.completed = false;
+        body.completedAt = null;
+    }
+    Todo.findByIdAndUpdate(id, {$set: body}, {$new: true}).then((todo) => {
+        if(!todo) {
+            res.status(404).send();
+        }
+        res.send({todo});
+    }).catch((e) => {
+        res.send(400).send();
+    });
 
 });
 
