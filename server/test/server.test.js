@@ -5,6 +5,8 @@ const {populateTodos, populateUsers, todos, users} = require('./seed/seed');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
+const {User} = require('./../models/user');
+
 
 beforeEach(populateTodos);
 beforeEach(populateUsers);
@@ -94,9 +96,6 @@ describe('DELETE /todos/:id', () => {
     it('should remove a todo', (done) => {
       var hexId = todos[1]._id.toHexString();
       request(app)
-        .get('/todos').then((data)=> console.log(data.body));
-        console.log(hexId);
-      request(app)
         .delete(`/todos/${hexId}`)
         .expect(200)
         .expect((res) => {
@@ -180,9 +179,78 @@ describe('PATCH /todos/:id', () => {
             }).catch((e) => done());
         });
     });
+});
+
+describe('GET /users/me', () => {
+    it('should return a user if authorized', (done) => {
+        request(app)
+        .get('/users/me')
+        .set('x-auth', users[0].tokens[0].token)
+        .expect(200)
+        .expect((res) => {
+            expect(res.body._id).toBe(users[0]._id.toHexString());
+            expect(res.body.email).toBe(users[0].email);
+            
+        })
+        .end(done);
+    });
+
+    it('should return 401 if user is not authorized', (done) => {
+        request(app)
+        .get('/users/me')
+        .expect(401)
+        .expect((res) => {
+            expect(res.body).toEqual({});
+        })
+        .end(done);
+    });
+});
 
 
-})
+describe('POST /users', () => {
+    it('should create a user', (done) => {
+        const email = 'jagat@example.com';
+        const password = '123abc';
+
+        request(app)
+        .post('/users')
+        .send({email, password})
+        .expect(200)
+        .expect((res) => {
+            expect(res.body.email).toBe(email);
+            expect(res.body._id).toBeTruthy();
+            expect(res.headers['x-auth']).toBeTruthy();
+        })
+        .end((err) => {
+            if (err) {
+                done(err)
+            }
+
+            User.findOne({email}).then((user) => {
+                expect(user).toBeTruthy();
+                done();
+            });
+
+        });
+    });
+
+    it('should return validation error if request invalid', (done) => {
+        request(app)
+        .post('/users')
+        .send({email: 'and', password: '123a'})
+        .expect(400)
+        .end(done);
+    });
+
+    it('should not create user if email already exists', (done) => {
+        request(app)
+        .post('/users')
+        .send({email: users[0].email, password: '123abc'})
+        .expect(400)
+        .end(done);
+    });
+});
+
 
 
 

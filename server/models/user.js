@@ -11,7 +11,7 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: 1,
         unique: true,
-        validator: {
+        validate: {
             validator: validator.isEmail,
             message: '{VALUE} is not a valid email'
         }
@@ -43,7 +43,6 @@ UserSchema.methods.generateAuthToken = function () {
     const user = this;
     const access = 'auth';
     const token = jwt.sign({_id: user._id.toHexString(), access}, '123abc').toString();
-
     user.tokens.push({access, token});
     return user.save().then(() => {
         return token;
@@ -53,7 +52,6 @@ UserSchema.methods.generateAuthToken = function () {
 UserSchema.statics.findByToken = function (token) {
     const User = this;
     let decoded;
-
     try {
         decoded = jwt.verify(token, '123abc');
     } catch (e) {
