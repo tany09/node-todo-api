@@ -1,25 +1,13 @@
 const expect = require('expect');
 const request = require('supertest');
 const { ObjectID } = require('mongodb');
+const {populateTodos, populateUsers, todos, users} = require('./seed/seed');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
-const todos = [{
-    _id: new ObjectID(),
-    text: "Todo 1"
-}, {
-    _id: new ObjectID(),
-    text: "Todo 2",
-    completed: true,
-    completedAt: 555
-}];
-
-beforeEach((done) => {
-    Todo.remove({}).then(() => {
-        return Todo.insertMany(todos);
-    }).then(() => done());
-});
+beforeEach(populateTodos);
+beforeEach(populateUsers);
 
 describe('POST /todo', () => {
     it('should create a new todo', (done) => {
@@ -101,37 +89,12 @@ describe('GET /todos', () => {
     });
 });
 
-// describe('DELETE /todos/:id', () => {
-//     it('should delete a todo', (done) => {
-//         const hexId = todos[1]._id.toHexString();
-//         request(app)
-//         .delete(`/todos/${hexId}`)
-//         .expect(200)
-//         .expect((res) => {
-//             expect(res.body.todo._id).toBe(hexId);
-//         })
-//         .end((err, res) => {
-//             if (err) {
-//                 return done(err);
-//             }
-//             Todo.findById(hexId).then((todo) => {
-//                 expect(todo).toNotExist();
-//                 done();
-//             }).catch((e) => done(e))
-//         })
-//     });
-    // it('should return 404 if todo not found', (done) => {
-    //     const hexId = todo[1]._id.toHexString();
-
-//     // })
-// })
 
 describe('DELETE /todos/:id', () => {
     it('should remove a todo', (done) => {
       var hexId = todos[1]._id.toHexString();
       request(app)
         .get('/todos').then((data)=> console.log(data.body));
-        // console.log(data);
         console.log(hexId);
       request(app)
         .delete(`/todos/${hexId}`)
@@ -220,3 +183,7 @@ describe('PATCH /todos/:id', () => {
 
 
 })
+
+
+
+
